@@ -1,0 +1,51 @@
+
+_getQuery() {
+  # you can choose fields from the output json:
+  # http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#output
+  local fields="id: InstanceId"
+  fields="$fields, ami: ImageId"
+  fields="$fields, ip: PublicIpAddress"
+  fields="$fields, ip: PrivateIpAddress"
+  #fields="$fields, state: State.Name"
+  fields="$fields"', name: join(``, Tags[?Key==`Name`].Value || `[]`)'
+  fields="$fields"', owner: join(``, Tags[?Key==`owner`].Value || `[]`)'
+  #fields="$fields"', tagz: join(`,`,Tags[].join(`=`,[Key,Value] || `[]`) || `[]`)'
+
+  # simple fields example
+  #fields="$fields"', xxx: yyy'
+
+  # field contains jmespath literal
+  #fields="$fields"', xxx: `literal`'
+
+  echo "Reservations[].Instances[].{${fields}}"
+}
+
+ec2-list-all() {
+  local filter=$@
+  aws ec2 describe-instances $filter --query "$(_getQuery)" --out table
+
+}
+
+ec2-list-filtered() {
+  local filterName=${1?:" first param REQUIRED: <filtername> example: instance-state-name"}
+  local filterValue=${2:?" second param RREQUIRED: <values> example: running"}
+  ec2-list-all --filters Name=$filterName,Values=$filterValue
+}
+
+ec2-list-running() {
+  ec2-list-filtered instance-state-name running
+}
+
+ec2-list-by-name() {
+  ec2-list-filtered tag:Name ${1:?"first param REQUIRED: <name>"}
+}
+
+ec2-list-by-owner() {
+  ec2-list-filtered tag:owner ${1:?"first param REQUIRED: <owner>"}
+}
+
+ec2-list-by-tagvalue() {
+  ec2-list-filtered
+}
+
+alias ec2-reload-functions='. ~/apps/bin/ec2-functions'
