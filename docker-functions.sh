@@ -1,8 +1,9 @@
-#eval $(dvm env)
-export DOCKER_HOST=tcp://127.0.0.1:4243
+#####################################
+# curl -Lo /tmp/docker-functions http://j.mp/docker-functions && source /tmp/docker-functions
+#####################################
+
 alias dps='docker ps'
 alias dpsa='docker ps -a'
-alias reload="source ~/apps/bin/docker-functions.sh"
 
 docker-restart() {
     boot2docker ssh "sudo /etc/init.d/docker restart && docker version"
