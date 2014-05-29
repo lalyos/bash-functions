@@ -54,11 +54,7 @@ docker-play-mybase() {
 }
 
 docker-logs(){
-  sshpass -p tcuser ssh -p 2022 docker@127.0.0.1  tail -f /var/log/docker.log
-}
-
-drd() {
- docker  run -i -t -dns 127.0.0.1 --name $1 -h $1 dnsmasq /bin/bash
+  boot2docker ssh tail -f /var/log/docker.log
 }
 
 docker-rmi-unnamed() {
