@@ -43,6 +43,11 @@ docker-kill-since() {
   docker rm $(docker ps -q  --since $1)
 }
 
+docker-kill-all() {
+  docker stop -t 0 $(docker ps -q)
+  docker rm $(docker ps -qa)
+}
+
 docker-play-mybase() {
     docker run -i -t mybase /bin/bash
     docker-kill-last
