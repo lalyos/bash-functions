@@ -10,7 +10,7 @@ docker-restart() {
 
 docker-kill-last() {
     LAST_CONTAINER=$(docker ps -q -l)
-    docker stop -t 1 $LAST_CONTAINER
+    docker stop -t 0 $LAST_CONTAINER
     docker rm $LAST_CONTAINER
 }
 
@@ -19,7 +19,7 @@ docker-kill-between() {
       echo please specify SINCE and BEFORE containers
       return
     fi
-    docker stop -t -1 $(docker ps -q --since $1 --before $2)
+    docker stop -t 0 $(docker ps -q --since $1 --before $2)
     docker rm $(docker ps -q --since $1 --before $2)
 }
 
@@ -29,7 +29,7 @@ docker-kill-before() {
     return
   fi
 
-  docker stop -t -1 $(docker ps -q  --before $1)
+  docker stop -t 0 $(docker ps -q  --before $1)
   docker rm $(docker ps -q  --before $1)
 }
 
@@ -39,7 +39,7 @@ docker-kill-since() {
     return
   fi
 
-  docker stop -t -1 $(docker ps -q  --since $1)
+  docker stop -t 0 $(docker ps -q  --since $1)
   docker rm $(docker ps -q  --since $1)
 }
 
