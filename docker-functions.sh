@@ -5,7 +5,17 @@ alias dpsa='docker ps -a'
 alias reload="source ~/apps/bin/docker-functions.sh"
 
 docker-restart() {
-    sshpass -p tcuser ssh docker@127.0.0.1 -p 2022  "sudo /etc/init.d/docker restart && docker version"
+    boot2docker ssh "sudo /etc/init.d/docker restart && docker version"
+}
+
+docker-ps() {
+  #docker ps|sed "s/ \{3,\}/#/g"|cut -d '#' -f 1,2,7|sed "s/#/\t/g"
+  docker inspect --format="{{.Name}} {{.NetworkSettings.IPAddress}} {{.Config.Image}} {{.Config.Entrypoint}} {{.Config.Cmd}}" $(docker ps -q)
+}
+
+docker-psa() {
+  #docker ps|sed "s/ \{3,\}/#/g"|cut -d '#' -f 1,2,7|sed "s/#/\t/g"
+  docker inspect --format="{{.Name}} {{.NetworkSettings.IPAddress}} {{.Config.Image}} {{.Config.Entrypoint}} {{.Config.Cmd}}" $(docker ps -qa)
 }
 
 docker-kill-last() {
