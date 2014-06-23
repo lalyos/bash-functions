@@ -25,44 +25,46 @@ docker-psa() {
   docker inspect --format="{{.Name}} {{.NetworkSettings.IPAddress}} {{.Config.Image}} {{.Config.Entrypoint}} {{.Config.Cmd}}" $(docker ps -qa)
 }
 
+_docker-kill-containers() {
+  CONTAINERS=$1
+  if [ -z "$CONTAINERS" ] ; then
+    debug no containers to kill ...
+  else
+    docker stop -t 0 $CONTAINERS
+    docker rm $CONTAINERS
+  fi
+}
+
 docker-kill-last() {
-    LAST_CONTAINER=$(docker ps -q -l)
-    docker stop -t 0 $LAST_CONTAINER
-    docker rm $LAST_CONTAINER
+  _docker-kill-containers $(docker ps -q -l)
 }
 
 docker-kill-between() {
-    if [ $# -lt 2 ] ; then
-      echo please specify SINCE and BEFORE containers
-      return
-    fi
-    docker stop -t 0 $(docker ps -q --since $1 --before $2)
-    docker rm $(docker ps -q --since $1 --before $2)
+  if [ $# -lt 2 ] ; then
+    echo please specify SINCE and BEFORE containers
+  else
+    _docker-kill-containers $(docker ps -q --since $1 --before $2)
+  fi
 }
 
 docker-kill-before() {
   if [ $# -lt 1 ] ; then
     echo please specify BEFORE containers
-    return
+  else
+    _docker-kill-containers $(docker ps -q  --before $1)
   fi
-
-  docker stop -t 0 $(docker ps -q  --before $1)
-  docker rm $(docker ps -q  --before $1)
 }
 
 docker-kill-since() {
   if [ $# -lt 1 ] ; then
     echo please specify SINCE containers
-    return
+  else
+    _docker-kill-containers $(docker ps -q  --since $1)
   fi
-
-  docker stop -t 0 $(docker ps -q  --since $1)
-  docker rm $(docker ps -q  --since $1)
 }
 
 docker-kill-all() {
-  docker stop -t 0 $(docker ps -q)
-  docker rm $(docker ps -qa)
+  _docker-kill-containers $(docker ps -qa)
 }
 
 docker-play-mybase() {
