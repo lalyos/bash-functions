@@ -2,10 +2,25 @@
 # curl -Lo /tmp/docker-functions http://j.mp/docker-functions && source /tmp/docker-functions
 #####################################
 
+DOCKER_FUNCTION_VERSION=0.9
+
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 
 : ${DEBUG:=1}
+
+PRG="$BASH_SOURCE"
+
+docker-functions() {
+  echo DOCKER_FUNCTION_VERSION=$DOCKER_FUNCTION_VERSION
+  echo source=$PRG
+}
+
+docker-functions-reload() {
+  curl -Lo /tmp/docker-functions http://j.mp/docker-functions
+  source /tmp/docker-functions
+  docker-functions
+}
 
 debug() {
   [ $DEBUG -gt 0 ] && echo [DEBUG] "$@" 1>&2
