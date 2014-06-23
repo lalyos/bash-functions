@@ -25,6 +25,11 @@ docker-psa() {
   docker inspect --format="{{.Name}} {{.NetworkSettings.IPAddress}} {{.Config.Image}} {{.Config.Entrypoint}} {{.Config.Cmd}}" $(docker ps -qa)
 }
 
+docker-last-ip() {
+  CONTAINERS=$(docker ps -q)
+  [ -n "$CONTAINERS" ] && docker inspect --format="{{.NetworkSettings.IPAddress}}" $CONTAINERS
+}
+
 _docker-kill-containers() {
   CONTAINERS=$1
   if [ -z "$CONTAINERS" ] ; then
