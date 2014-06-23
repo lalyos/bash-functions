@@ -5,6 +5,12 @@
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 
+: ${DEBUG:=1}
+
+debug() {
+  [ $DEBUG -gt 0 ] && echo [DEBUG] "$@" 1>&2
+}
+
 docker-restart() {
     boot2docker ssh "sudo /etc/init.d/docker restart && docker version"
 }
