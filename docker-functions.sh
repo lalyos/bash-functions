@@ -47,7 +47,7 @@ docker-last-ip() {
 }
 
 _docker-kill-containers() {
-  CONTAINERS=$1
+  CONTAINERS="$@"
   if [ -z "$CONTAINERS" ] ; then
     debug no containers to kill ...
   else
