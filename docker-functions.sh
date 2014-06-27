@@ -16,6 +16,34 @@ docker-functions() {
   echo source=$PRG
 }
 
+docker-in-docker() {
+  docker run --privileged -d -p 4444 -e PORT=4444 --name dind jpetazzo/dind
+  [ -f /tmp/docker-0.11.1 ] || ( curl -o /tmp/docker-0.11.1 https://get.docker.io/builds/Darwin/x86_64/docker-0.11.1; chmod +x /tmp/docker-0.11.1)
+
+  DIND_IP=$(docker inspect -f "{{.NetworkSettings.IPAddress}}" dind)
+  cat <<EOF
+
+  docker in docker (DIND)started in a daemon container
+  on port 4444. the daemon is 0.11.1 version, so to
+  communicate with DIND use this alias:
+
+############################################################
+  alias docker='/tmp/docker-0.11.1 -H tcp://$DIND_IP:4444'
+############################################################
+
+  if you want to switch back to the original docker just:
+
+  unalias docker; hash -r
+EOF
+}
+
+docker-in-docker-end() {
+  docker stop -t 0 dind
+  docker rm dind
+  unalias docker
+  hash -r
+}
+
 docker-functions-reload() {
   curl -Lo /tmp/docker-functions http://j.mp/docker-functions
   source /tmp/docker-functions
