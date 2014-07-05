@@ -44,6 +44,15 @@ docker-in-docker-end() {
   hash -r
 }
 
+docker-enter() {
+  docker-check-and-install-nseneter
+  boot2docker ssh -t sudo /var/lib/boot2docker/docker-enter "$@"
+}
+
+docker-check-and-install-nseneter() {
+  boot2docker ssh '[ -f /var/lib/boot2docker/nsenter ] || (curl -qL http://dl.bintray.com/sequenceiq/sequenceiq-bin/nsenter-2.24.tar|sudo tar -xv -C /var/lib/boot2docker/)'
+}
+
 docker-functions-reload() {
   curl -Lo /tmp/docker-functions http://j.mp/docker-functions
   source /tmp/docker-functions
