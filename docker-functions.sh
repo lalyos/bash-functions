@@ -149,5 +149,5 @@ docker-commandsa() {
 }
 
 docker-commands-full() {
-  docker inspect $(docker ps -q)|jq ".[]| {path: .Path, args: .Args, cmd: .Config.Cmd, pointcut: .Config.Entrypoint}" -c
+  docker inspect $(docker ps -q)|jq ".[]| {path: .Path, args: .Args, cmd: .Config.Cmd, entrypoint: .Config.Entrypoint}" -c
 }
