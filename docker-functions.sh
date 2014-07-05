@@ -45,12 +45,8 @@ docker-in-docker-end() {
 }
 
 docker-enter() {
-  docker-check-and-install-nseneter
+  boot2docker ssh '[ -f /var/lib/boot2docker/nsenter ] || (docker run --rm -v /var/lib/boot2docker/:/target jpetazzo/nsenter ; sudo curl -Lo /var/lib/boot2docker/docker-enter https://raw.githubusercontent.com/jpetazzo/nsenter/master/docker-enter )'
   boot2docker ssh -t sudo /var/lib/boot2docker/docker-enter "$@"
-}
-
-docker-check-and-install-nseneter() {
-  boot2docker ssh '[ -f /var/lib/boot2docker/nsenter ] || (curl -qL http://dl.bintray.com/sequenceiq/sequenceiq-bin/nsenter-2.24.tar|sudo tar -xv -C /var/lib/boot2docker/)'
 }
 
 docker-functions-reload() {
