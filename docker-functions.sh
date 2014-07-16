@@ -44,10 +44,7 @@ docker-in-docker-end() {
   hash -r
 }
 
-docker-enter() {
-  boot2docker ssh '[ -f /var/lib/boot2docker/nsenter ] || (docker run --rm -v /var/lib/boot2docker/:/target jpetazzo/nsenter ; sudo curl -Lo /var/lib/boot2docker/docker-enter https://raw.githubusercontent.com/jpetazzo/nsenter/master/docker-enter )'
-  boot2docker ssh -t sudo /var/lib/boot2docker/docker-enter "$@"
-}
+docker-enter() { boot2docker ssh -t "[ -f /var/lib/boot2docker/nsenter ] || docker run --rm -v /var/lib/boot2docker/:/target jpetazzo/nsenter; sudo /var/lib/boot2docker/docker-enter $@"; }
 
 docker-functions-reload() {
   curl -Lo /tmp/docker-functions http://j.mp/docker-functions
