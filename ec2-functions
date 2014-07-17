@@ -3,7 +3,7 @@ _getQuery() {
   # you can choose fields from the output json:
   # http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#output
   local fields="id: InstanceId"
-  fields="$fields, ami: ImageId"
+  #fields="$fields, ami: ImageId"
   fields="$fields, pubIp: PublicIpAddress"
   fields="$fields, privIp: PrivateIpAddress"
   #fields="$fields, state: State.Name"
@@ -47,6 +47,52 @@ ec2-list-by-owner() {
 
 ec2-list-by-tagvalue() {
   ec2-list-filtered
+}
+
+ec2-regions() {
+  aws ec2 describe-regions --query "Regions[].RegionName" --out text
+}
+
+ec2-list-self-images() {
+  : ${AWS_OWNER:=755047402263}
+  for reg in $(ec2-regions); do
+    aws ec2 describe-images \
+      --region $reg \
+      --filters Name=owner-id,Values=$AWS_OWNER \
+      --query "Images[].[ImageId,Name]" \
+      --out text | xargs -n 2 echo $reg
+  done
+}
+
+ec2-clean-images() {
+  local amiWhiteList="ci-2014-06-25\|ci-sequenceiq\|ambari-docker-140716083934"
+  ec2-list-self-images | grep -v "$amiWhiteList"|xargs -n 3 echo ec2-delete-ami 
+}
+
+ec2-delete-ami() {
+  local region=$1
+  local ami=$2
+  : ${region:? requeired 1. parameter}
+  : ${ami:? requeired 2. parameter}
+
+  local name=$(aws ec2 describe-images \
+    --region $region \
+    --image-ids $ami \
+    --query "Images[].Name" \
+    --out text
+  )
+
+  local snap=$(aws ec2 describe-images \
+    --region $region \
+    --image-ids $ami \
+    --query "Images[].BlockDeviceMappings[].Ebs.SnapshotId" \
+    --out text
+  )
+
+  echo [ec2-deregister-image] $name
+  aws ec2 deregister-image --region $region --image-id $ami --out text
+  echo [ec2-delete-snapshot] $snap
+  aws ec2 delete-snapshot --region $region --snapshot-id $snap --out text
 }
 
 alias ec2-reload-functions='. ~/apps/bin/ec2-functions'
