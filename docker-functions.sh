@@ -6,6 +6,7 @@ DOCKER_FUNCTION_VERSION=0.9
 
 alias dps='docker ps'
 alias dpsa='docker ps -a'
+alias dim='docker images'
 
 : ${DEBUG:=1}
 
