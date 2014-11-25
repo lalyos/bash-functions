@@ -8,25 +8,25 @@ _getQuery() {
   if [[ "$ec2_fields" ]]; then
     echo "$ec2_fields"
   else
-  # you can choose fields from the output json:
-  # http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#output
-  local fields="id: InstanceId"
-  #fields="$fields, ami: ImageId"
-  fields="$fields, pubIp: PublicIpAddress"
-  fields="$fields, privIp: PrivateIpAddress"
-  #fields="$fields, state: State.Name"
-  fields="$fields, idx: AmiLaunchIndex"
-  fields="$fields"', name: join(``, Tags[?Key==`Name`].Value || `[]`)'
+    # you can choose fields from the output json:
+    # http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#output
+    local fields="id: InstanceId"
+    #fields="$fields, ami: ImageId"
+    fields="$fields, pubIp: PublicIpAddress"
+    fields="$fields, privIp: PrivateIpAddress"
+    #fields="$fields, state: State.Name"
+    fields="$fields, idx: AmiLaunchIndex"
+    fields="$fields"', name: join(``, Tags[?Key==`Name`].Value || `[]`)'
     fields="$fields"', owner: join(``, Tags[?Key==`owner`].Value || `[]`)'
-  #fields="$fields"', tagz: join(`,`,Tags[].join(`=`,[Key,Value] || `[]`) || `[]`)'
+    #fields="$fields"', tagz: join(`,`,Tags[].join(`=`,[Key,Value] || `[]`) || `[]`)'
 
-  # simple fields example
-  #fields="$fields"', xxx: yyy'
+    # simple fields example
+    #fields="$fields"', xxx: yyy'
 
-  # field contains jmespath literal
-  #fields="$fields"', xxx: `literal`'
+    # field contains jmespath literal
+    #fields="$fields"', xxx: `literal`'
 
-  echo "Reservations[].Instances[].{${fields}}"
+    echo "Reservations[].Instances[].{${fields}}"
   fi
 }
 
