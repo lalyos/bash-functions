@@ -45,6 +45,22 @@ ec2-ip-by-name() {
     --query 'Reservations[].Instances[].{pubIp: PublicIpAddress}' \
     --out text
 }
+ec2-sudo-ssh-by-name() {
+  declare name=$1
+  declare user=${2:-ubuntu}
+  : ${name:? filter value for the Name tag is required}
+  : ${user:? ssh username required}
+
+  local ip=$(ec2-ip-by-name $name)
+  debug ssh to $ip
+  ssh -t \
+    -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -o ControlMaster=auto \
+    -o ControlPath=/tmp/%r@%h:%p \
+    -o ControlPersist=yes \
+    ubuntu@${ip} sudo su
+}
 ec2-list-filtered() {
   local filterName=${1?:" first param REQUIRED: <filtername> example: instance-state-name"}
   local filterValue=${2:?" second param RREQUIRED: <values> example: running"}
