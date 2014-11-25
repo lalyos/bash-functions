@@ -1,3 +1,8 @@
+: ${DEBUG:=1}
+
+debug() {
+  [[ "$DEBUG" ]] && echo "[DEBUG] $@" 1>&2
+}
 
 _getQuery() {
   # you can choose fields from the output json:
