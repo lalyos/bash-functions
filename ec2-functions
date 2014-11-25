@@ -32,7 +32,10 @@ _getQuery() {
 
 ec2-list-all() {
   local filter=$@
-  aws ec2 describe-instances $filter --query "$(_getQuery)" --out table
+  local query="$(_getQuery)"
+  [[ "$TRACE" ]] && set -x
+  aws ec2 describe-instances $filter --query "$query" --out table
+  set +x
 
 }
 
