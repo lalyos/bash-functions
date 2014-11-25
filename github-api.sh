@@ -3,7 +3,11 @@
 : ${TOKEN?"please set you github token into KEY env variable"}
 
 github(){
-  curl https://api.github.com/$1 -H "Authorization: token $TOKEN"
+  local path=$1
+  shift
+  [[ "TRACE" ]] && set -x
+  curl https://api.github.com/$path -H "Authorization: token $TOKEN" "$@"
+  set +x
 }
 
 github_put(){
