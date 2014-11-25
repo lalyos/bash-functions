@@ -19,7 +19,7 @@ github_post(){
 }
 
 choose_repo(){
-  select repo in $(github orgs/sequenceiq/repos | jq .[].full_name -r); do
+  select repo in $(github "orgs/sequenceiq/repos?per_page=100" | jq .[].full_name -r); do
     break
   done
   echo $repo
