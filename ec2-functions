@@ -36,6 +36,15 @@ ec2-list-all() {
 
 }
 
+ec2-ip-by-name() {
+  declare name=$1
+  : ${name:? filter value for the Name tag is required}
+
+  aws ec2 describe-instances \
+    --filters Name=tag:Name,Values=$name \
+    --query 'Reservations[].Instances[].{pubIp: PublicIpAddress}' \
+    --out text
+}
 ec2-list-filtered() {
   local filterName=${1?:" first param REQUIRED: <filtername> example: instance-state-name"}
   local filterValue=${2:?" second param RREQUIRED: <values> example: running"}
