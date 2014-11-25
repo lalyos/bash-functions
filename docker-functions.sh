@@ -17,6 +17,10 @@ docker-functions() {
   echo source=$PRG
 }
 
+docker-reload() {
+  source ${BASH_SOURCE[0]}
+}
+
 docker-in-docker() {
   docker run --privileged -d -p 4444 -e PORT=4444 --name dind jpetazzo/dind
   [ -f /tmp/docker-0.11.1 ] || ( curl -o /tmp/docker-0.11.1 https://get.docker.io/builds/Darwin/x86_64/docker-0.11.1; chmod +x /tmp/docker-0.11.1)
@@ -36,6 +40,14 @@ docker-in-docker() {
 
   unalias docker; hash -r
 EOF
+}
+
+docker-pi() {
+    alias docker='echo -e "\n=== RaspbPI ===\n" 1>&2 ; ~/.boot2docker/docker-0.11.0 -H tcp://rpi:2375'
+}
+
+docker-find-pi() {
+  nmap -np2375 $(ifconfig en0|sed -n "/broadcast/ s/.*broadcast.//p")/24
 }
 
 docker-in-docker-end() {
