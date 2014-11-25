@@ -45,6 +45,7 @@ ec2-ip-by-name() {
     --query 'Reservations[].Instances[].{pubIp: PublicIpAddress}' \
     --out text
 }
+
 ec2-sudo-ssh-by-name() {
   declare name=$1
   declare user=${2:-ubuntu}
@@ -61,6 +62,24 @@ ec2-sudo-ssh-by-name() {
     -o ControlPersist=yes \
     ubuntu@${ip} sudo su
 }
+
+ec2-full-access() {
+  declare name=$1
+  : ${name:? required}
+
+  local group=$( aws ec2 describe-instances \
+    --filter Name=tag:Name,Values=$name \
+    --query Reservations[0].Instances[0].SecurityGroups[0].GroupId  \
+    --out text
+  )
+  echo group=$group
+
+  aws ec2 authorize-security-group-ingress \
+	 --ip-protocol -1 \
+	 --cidr-ip=$(curl http://ipecho.net/plain)/32 \
+	 --group-id $group
+}
+
 ec2-list-filtered() {
   local filterName=${1?:" first param REQUIRED: <filtername> example: instance-state-name"}
   local filterValue=${2:?" second param RREQUIRED: <values> example: running"}
