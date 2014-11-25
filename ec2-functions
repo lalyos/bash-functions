@@ -17,7 +17,7 @@ _getQuery() {
   #fields="$fields, state: State.Name"
   fields="$fields, idx: AmiLaunchIndex"
   fields="$fields"', name: join(``, Tags[?Key==`Name`].Value || `[]`)'
-  #fields="$fields"', owner: join(``, Tags[?Key==`owner`].Value || `[]`)'
+    fields="$fields"', owner: join(``, Tags[?Key==`owner`].Value || `[]`)'
   #fields="$fields"', tagz: join(`,`,Tags[].join(`=`,[Key,Value] || `[]`) || `[]`)'
 
   # simple fields example
