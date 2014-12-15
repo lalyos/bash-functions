@@ -129,7 +129,7 @@ ec2-delete-keys-by-fingerprint() {
     echo === clean $reg
     aws ec2 describe-key-pairs --region=$reg \
       | jq '.KeyPairs[]|select(.KeyFingerprint=="'$fingerprint'")|.KeyName' -r \
-      | xargs -n 1 --no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
+      | xargs -P 20 -t -n 1 --no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
   done
 }
 
@@ -141,7 +141,7 @@ ec2-delete-keys-by-prefix() {
     echo === clean $reg
     aws ec2 describe-key-pairs --region=$reg \
       | jq '.KeyPairs[]|.KeyName|select(startswith("'$keynamePrefix'"))' -r \
-      | xargs -n 1--no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
+      | xargs -P 20 -t -n 1 --no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
   done
 }
 
