@@ -120,6 +120,32 @@ ec2-list-self-images() {
   done
 }
 
+
+ec2-delete-keys-by-fingerprint() {
+  declare fingerprint=$1
+
+  : ${fingerprint:? required}
+  for reg in $(aws ec2 describe-regions --query "Regions[].RegionName" --out text); do 
+    echo === clean $reg
+    aws ec2 describe-key-pairs --region=$reg \
+      | jq '.KeyPairs[]|select(.KeyFingerprint=="'$fingerprint'")|.KeyName' -r \
+      | xargs -n 1 --no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
+  done
+}
+
+ec2-delete-keys-by-prefix() {
+  declare keynamePrefix=$1
+
+  : ${keynamePrefix:? required}
+  for reg in $(aws ec2 describe-regions --query "Regions[].RegionName" --out text); do 
+    echo === clean $reg
+    aws ec2 describe-key-pairs --region=$reg \
+      | jq '.KeyPairs[]|.KeyName|select(startswith("'$keynamePrefix'"))' -r \
+      | xargs -n 1--no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
+  done
+}
+
+
 ec2-clean-images() {
   local amiWhiteList="ci-2014-06-25\|ci-sequenceiq\|ambari-docker-140716083934"
   ec2-list-self-images | grep -v "$amiWhiteList"|xargs -n 3 echo ec2-delete-ami 
