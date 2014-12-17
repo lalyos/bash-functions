@@ -1,5 +1,11 @@
 #!/bin/bash
 
+: ${DEBUG:=1}
+
+debug() {
+  [[ "$DEBUG" ]] && echo "[DEBUG] $*" 1>&2
+}
+
 gce_reload_functions() {
   source $BASH_SOURCE
 }
@@ -13,6 +19,32 @@ gce_zones() {
   gcloud compute zones list --format json|jq .[].name -r
 }
 
+gce_list_disks() {
+	gcloud compute disks list --format json | jq ".[].name" -r
+}
+
+gce_clean_unused_disks() {
+  for zone in $(gcloud compute zones list --format json|jq .[].name -r); do
+	gce_clean_unused_disks_in_zone $zone
+  done
+}
+
+gce_clean_unused_disks_in_zone() {
+  declare zone=$1
+  : ${zone:? required}
+ 
+  debug "[$zone] cleaning unsed disks" 
+  local used=$(
+     gcloud compute instances list --zone $zone --format json \
+       | jq '[.[]|.disks[].source]|join("|")' -r \
+  )
+  local grepFilter=$(echo "$used"| sed "s:|:\\\\|:g")
+ 
+  gcloud compute disks list --zone $zone --format json \
+    | jq ".[].name" -r \
+    | grep -v "$grepFilter" \
+    | xargs --no-run-if-empty -t gcloud compute disks delete --zone $zone 
+}
 
 gce_list_runnings() {
 	gcloud compute instances list --format json \
