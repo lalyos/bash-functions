@@ -46,7 +46,15 @@ gce_clean_unused_disks_in_zone() {
     | xargs --no-run-if-empty -t gcloud compute disks delete --zone $zone 
 }
 
-gce_list_runnings() {
+gce_list_running() {
+	gcloud compute instances list
+}
+
+gce_list_by_regexp() {
+	gcloud compute instances list --regexp ".*$1.*"
+}
+
+gce_list_runnings_() {
 	gcloud compute instances list --format json \
 	  |jq ".[]|.name, .zone, .status, .networkInterfaces[0].accessConfigs[0].natIP, .networkInterfaces[0].networkIP" -r \
 	  |xargs -n 5 printf "%-40s | %-15s | %-10s | %-15s | %-15s \n"
