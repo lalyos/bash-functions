@@ -4,16 +4,15 @@ gce_reload_functions() {
   source $BASH_SOURCE
 }
 
+gce_upgrade_functions() {
+  curl -Lo $BASH_SOURCE j.mp/gce-functions
+  source $BASH_SOURCE
+}
+
 gce_zones() {
   gcloud compute zones list --format json|jq .[].name -r
 }
 
-gce_instances() {
-	for zone in $(gce_zones); do
-		echo === zone: $zone
-
-	done
-}
 
 gce_list_runnings() {
 	gcloud compute instances list --format json \
