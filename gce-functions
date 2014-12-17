@@ -1,0 +1,22 @@
+#!/bin/bash
+
+gce_reload_functions() {
+  source $BASH_SOURCE
+}
+
+gce_zones() {
+  gcloud compute zones list --format json|jq .[].name -r
+}
+
+gce_instances() {
+	for zone in $(gce_zones); do
+		echo === zone: $zone
+
+	done
+}
+
+gce_list_runnings() {
+	gcloud compute instances list --format json \
+	  |jq ".[]|.name, .zone, .status, .networkInterfaces[0].accessConfigs[0].natIP, .networkInterfaces[0].networkIP" -r \
+	  |xargs -n 5 printf "%-40s | %-15s | %-10s | %-15s | %-15s \n"
+}
