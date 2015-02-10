@@ -130,6 +130,23 @@ ec2-list-self-images() {
   done
 }
 
+ec2-delete-image-by-prefix() {
+  declare prefix=$1
+  : ${prefix:? required}
+
+  for reg in $(ec2-regions); do
+    echo === region: $reg
+    amis=$( aws ec2 describe-images --owners=self --region $reg \
+  	   | jq '.Images[]|select(.Name|startswith("'$prefix'"))|.ImageId ' -r
+          )
+
+    for ami in $amis; do
+      echo "---> delete: $ami"
+      ec2-delete-ami $reg $ami
+    done
+
+  done
+}
 
 ec2-delete-keys-by-fingerprint() {
   declare fingerprint=$1
