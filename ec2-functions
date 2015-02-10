@@ -30,6 +30,16 @@ _getQuery() {
   fi
 }
 
+ec2-list-centos() {
+  for r in $(ec2-regions); do
+   debug CENTOS in $r:
+     aws ec2 describe-images \
+         --region $r \
+         --filter Name=owner-id,Values=679593333241 \
+         | jq '.Images[]|select(.ImageLocation|startswith("aws-marketplace/CentOS-6.5-GA"))|.ImageId' -r
+  done
+}
+
 ec2-list-all() {
   local filter=$@
   local query="$(_getQuery)"
