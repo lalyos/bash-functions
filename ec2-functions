@@ -30,16 +30,26 @@ _getQuery() {
   fi
 }
 
-ec2-list-centos() {
-  for r in $(ec2-regions); do
-   debug CENTOS in $r:
-     aws ec2 describe-images \
-         --region $r \
-         --filter Name=owner-id,Values=679593333241 \
-         | jq '.Images[]|select(.ImageLocation|startswith("aws-marketplace/CentOS-6.5-GA"))|.ImageId' -r
-  done
+ec2-find-img() {
+    local ownerid=$1 imglocstart=$2
+    aws ec2 describe-images \
+        --filter Name=owner-id,Values=$ownerid \
+        --out json \
+        | jq '.Images[]|select(.ImageLocation|startswith("'$imglocstart'"))|[.Name, .ImageId]' -c \
+        | sort -r | tail -1
 }
 
+ec2-find-img-regions() {
+    for r in $(ec2-regions); do
+        debug "-----> region $r"
+     AWS_DEFAULT_REGION=$r ec2-find-img "$@"
+  done
+
+}
+
+ec2-list-centos() {
+  ec2-find-img-regions 679593333241 aws-marketplace/CentOS-6.5-GA
+}
 ec2-list-all() {
   local filter=$@
   local query="$(_getQuery)"
