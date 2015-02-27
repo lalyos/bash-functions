@@ -50,6 +50,26 @@ ec2-find-img-regions() {
 ec2-list-centos() {
   ec2-find-img-regions 679593333241 aws-marketplace/CentOS-6.5-GA
 }
+
+ec2-list-debian-wheezy() {
+  ec2-find-img-regions 379101102735 379101102735/debian-wheezy-amd64
+}
+
+ec2-list-debian-jessie() {
+  ec2-find-img-regions 379101102735 379101102735/debian-jessie-amd64
+}
+
+ec2-list-fedora() {
+  ec2-find-img-regions 206029621532 amazon/fedora
+}
+
+ec2-list-redhat() {
+  ec2-find-img-regions 309956199498 309956199498/RHEL
+}
+
+ec2-list-ubuntu() {
+  ec2-find-img-regions 099720109477 099720109477/ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20150
+}
 ec2-list-all() {
   local filter=$@
   local query="$(_getQuery)"
