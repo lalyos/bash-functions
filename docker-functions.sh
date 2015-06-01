@@ -7,6 +7,16 @@ DOCKER_FUNCTION_VERSION=0.9
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias dim='docker images'
+alias drun='docker run -it --rm'
+ 
+# create the completition function
+_dpeco() { 
+  : ${IMG_CACHE:=/tmp/docker-images}
+  if [ ! -f $IMG_CACHE  ] || [[ "$(find $IMG_CACHE -cmin +60)"  ]] ; then 
+    docker images | tail -n +2 | sed "s/ \+/ /g" | cut -d ' ' -f 1,2 | sed "s/ /:/" |sort -u > $IMG_CACHE
+  fi
+  COMPREPLY=$(cat $IMG_CACHE|peco --query "$2 " ); 
+}; complete -F _dpeco drun
 
 : ${DEBUG:=1}
 
