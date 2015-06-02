@@ -6,7 +6,6 @@ DOCKER_FUNCTION_VERSION=0.9
 
 alias dps='docker ps'
 alias dpsa='docker ps -a'
-alias dim='docker images'
 alias drun='docker run -it --rm'
  
 # create the completition function
@@ -26,6 +25,15 @@ docker-functions() {
   echo DOCKER_FUNCTION_VERSION=$DOCKER_FUNCTION_VERSION
   echo source=$PRG
 }
+
+dim() {
+    docker images|grep MB|sort -n --key=7; docker images|grep GB|sort -n --key=7
+}
+
+dim-sort() {
+  docker images | sed -n "s/\(.*\) \([0-9]*\)\.[0-9]* MB$/\2+++\1/p"|sed "s/ \+/ /g"|cut -d' ' -f 1,2|tr ' ' ':'|sed 's/+++/ /'|sort -n
+}
+
 
 docker-reload() {
   source ${BASH_SOURCE[0]}
