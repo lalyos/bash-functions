@@ -1,0 +1,44 @@
+: <<USAGE
+###############################################
+curl -Lso /tmp/b2d-functions j.mp/b2d-functions && . /tmp/b2d-functions && b2d-doctor
+###############################################
+USAGE
+
+: ${DEBUG:=1}
+
+debug() {
+  [ $DEBUG -gt 0 ] && echo [DEBUG] "$@" 1>&2
+}
+
+b2d-reload() {
+  source ${BASH_SOURCE[0]}
+}
+alias r=b2d-reload
+
+b2d-fix-dns() {
+  boot2docker ssh "sudo sh -c 'sed  -i \"/UseDNS/ s/.*/UseDNS no/ \" /var/lib/boot2docker/ssh/sshd_config ' "
+  boot2docker ssh "sudo sh -c '/bin/cat > /etc/resolv.conf' " <<< "$(cat /etc/resolv.conf | grep nameserver)"
+  boot2docker ssh "sudo ip route flush cache"
+  boot2docker ssh "sudo /bin/sh -c 'sudo killall -9 docker ; /etc/init.d/docker restart'"
+}
+
+b2d-fix-date() {
+  boot2docker ssh sudo date --set \'$(date -u +%Y-%m-%d\ %H:%M)\'
+}
+
+
+b2d-route() {
+  B2D_IP=$(boot2docker ip 2>/dev/null)
+  BRIDGE_IP=$(boot2docker ssh 'ifconfig docker0|sed -n "// s/ *inet addr:\([0-9\.]*\) .*/\1/p"' 2>/dev/null)
+  if (route -n get $BRIDGE_IP|grep $B2D_IP) &> /dev/null ; then
+    debug routing ok you reach the bridge: $BRIDGE_IP directly
+  else
+    debug adding direct route to bridge: $BRIDGE_IP
+    sudo route add $BRIDGE_IP/16 $B2D_IP
+  fi
+}
+
+b2d-disk-usage() {
+  boot2docker ssh 'df -h|grep /dev/sda1'
+}
+
