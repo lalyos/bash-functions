@@ -29,6 +29,20 @@ gce_clean_unused_disks() {
   done
 }
 
+gce_delete_instances() {
+    declare desc="deletes instances matching a regexp"
+    declare nameRegexp=$1
+    
+    : ${nameRegexp:? required}
+
+    gcloud compute instances list -r ${nameRegexp}.* --format json \
+        | jq '.[]|.name,.zone' -r | \
+        while read name && read  zone; do 
+            gcloud compute instances delete --quiet --zone $zone  $name & 
+        done
+    
+}
+
 gce_clean_unused_disks_in_zone() {
   declare zone=$1
   : ${zone:? required}
