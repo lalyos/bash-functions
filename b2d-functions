@@ -1,6 +1,6 @@
 : <<USAGE
 ###############################################
-curl -Lso /tmp/b2d-functions j.mp/b2d-functions && . /tmp/b2d-functions && b2d-doctor
+curl -Lso /tmp/b2d-functions https://raw.githubusercontent.com/lalyos/bash-functions/master/b2d-functions && . /tmp/b2d-functions
 ###############################################
 USAGE
 
