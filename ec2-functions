@@ -47,8 +47,19 @@ ec2-find-img-regions() {
 
 }
 
-route53-seq() {
+check-sigil() {
+    if sigil -v &> /dev/null;then 
+        debug "sigil is already installed"
+    else
+        debug "install sigil"
+        curl https://dl.gliderlabs.com/sigil/latest/$(uname -sm|tr \  _).tgz \
+            | tar -zxC /usr/local/bin
+        debug "installed: $(sigil -v)"
+    fi
+}
 
+route53-seq() {
+  check-sigil
 cat <<"EOF" > /tmp/dns.tmpl
 {{ range $rec :=  (stdin | json | pointer "/ResourceRecordSets") \}}
 {{ $rec.Type }} | {{$rec.Name}} | {{range $rr := $rec.ResourceRecords}}{{$rr.Value}} |{{end}}
