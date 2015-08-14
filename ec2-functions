@@ -47,6 +47,19 @@ ec2-find-img-regions() {
 
 }
 
+route53-seq() {
+
+cat <<"EOF" > /tmp/dns.tmpl
+{{ range $rec :=  (stdin | json | pointer "/ResourceRecordSets") \}}
+{{ $rec.Type }} | {{$rec.Name}} | {{range $rr := $rec.ResourceRecords}}{{$rr.Value}} |{{end}}
+{{end}}
+EOF
+
+  aws route53 list-resource-record-sets --hosted-zone-id /hostedzone/ZM3N9EMI8XJSW \
+   | sigil -f /tmp/dns.tmpl \
+   | sort
+}
+
 ec2-list-centos() {
   ec2-find-img-regions 679593333241 aws-marketplace/CentOS-6.5-GA
 }
