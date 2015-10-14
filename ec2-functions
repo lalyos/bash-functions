@@ -153,6 +153,14 @@ ec2-list-filtered() {
   ec2-list-all --filters Name=$filterName,Values=$filterValue
 }
 
+ec2-list-running-us-eu() {
+    for r in $(ec2-regions-usa-eu); do
+        debug "-----> region $r"
+     AWS_DEFAULT_REGION=$r ec2-list-running "$@"
+  done
+
+}
+
 ec2-list-running() {
   ec2-list-filtered instance-state-name running
 }
@@ -171,6 +179,10 @@ ec2-list-by-tagvalue() {
 
 ec2-regions() {
   aws ec2 describe-regions --query "Regions[].RegionName" --out text
+}
+
+ec2-regions-usa-eu() {
+    aws ec2 describe-regions --query 'Regions[? starts_with(RegionName, `eu`) || starts_with(RegionName, `us`)].RegionName' --out text
 }
 
 ec2-list-self-images() {
