@@ -10,6 +10,10 @@ debug() {
   [ $DEBUG -gt 0 ] && echo [DEBUG] "$@" 1>&2
 }
 
+b2d() {
+    $(boot2docker shellinit)
+}
+
 b2d-reload() {
   source ${BASH_SOURCE[0]}
 }
