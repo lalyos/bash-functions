@@ -270,4 +270,25 @@ ec2-delete-ami() {
   aws ec2 delete-snapshot --region $region --snapshot-id $snap --out text
 }
 
+ec2-terminate-by-name-all-regs() {
+
+  local name=${1:? instance name is required}
+  for reg in $(ec2-regions); do
+    packerId=$(AWS_DEFAULT_REGION=$reg aws ec2 describe-instances \
+      --filters \
+        Name=tag:Name,Values="$name" \
+        Name=instance-state-name,Values=running \
+      --query 'Reservations[].Instances[].InstanceId' \
+      --out text)
+    
+    if [[ "$packerId" ]];then
+      echo "=== $reg: terminating '$name' ..."
+      AWS_DEFAULT_REGION=$reg aws ec2 terminate-instances \
+        --instance-ids $packerId \
+        --query TerminatingInstances[].InstanceId
+    else
+      echo "--- No '$name' is:  $reg"
+    fi
+  done
+}
 alias ec2-reload-functions='. ~/apps/bin/ec2-functions'
