@@ -196,7 +196,7 @@ ec2-list-self-images() {
   done
 }
 
-ec2-delete-image-by-prefix() {
+___ec2-delete-image-by-prefix() {
   declare prefix=$1
   : ${prefix:? required}
 
@@ -268,6 +268,32 @@ ec2-delete-ami() {
   aws ec2 deregister-image --region $region --image-id $ami --out text
   echo [ec2-delete-snapshot] $snap
   aws ec2 delete-snapshot --region $region --snapshot-id $snap --out text
+}
+
+ec2-delete-images-by-name-prefix() {
+  declare prefix=${1:? required}
+  
+  echo > /tmp/delete.sh
+  for reg in $(ec2-regions); do
+      local imagesToDelete=$(
+        aws ec2 describe-images \
+          --owners=self \
+          --query 'Images[?starts_with(Name,`cb-centos71-amb212-2015-11-09`)].[ImageId]' \
+          --out text | xargs echo
+      )
+      #echo "[WARNING] about to DELETE:"
+
+      aws ec2 describe-images \
+          --image-ids $imagesToDelete \
+          --query 'Images[].[ImageId,Name]' \
+          --out text
+      #echo "press ENTER to continue or CTRL-C to exit"
+      #read x
+
+      xargs -n 1 echo ec2-delete-ami $reg  <<< "$imagesToDelete"  >> /tmp/delete.sh
+  done
+
+  echo -e '=== generated script: cat /tmp/delete.sh\n=== execute: . /tmp/delete.sh'
 }
 
 ec2-terminate-by-name-all-regs() {
