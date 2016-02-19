@@ -1,0 +1,117 @@
+#!/bin/bash
+
+if [[ "$TRACE" ]]; then
+    : ${START_TIME:=$(date +%s)}
+    export START_TIME
+    export PS4='+ [TRACE $BASH_SOURCE:$LINENO][ellapsed: $(( $(date +%s) -  $START_TIME ))] '
+    set -x
+fi
+
+debug() {
+  [[ "$DEBUG" ]] && echo "-----> $*" 1>&2
+}
+
+init() {
+  : ${DEBUG:=1}
+}
+
+alias r="source $BASH_SOURCE"
+
+azure_copy_everywhere() {
+
+    locations="sequenceiqbrazilsouth2 sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqnortheurope2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2 sequenceiqwestus2"
+    #locations="sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2"
+    for loc in $locations; do
+      debug "COPY to $loc"
+      azure_blob_copy \
+        sequenceiqnortheurope2/system/Microsoft.Compute/Images/images/packer-osDisk.f65ccb29-3d55-4ef9-b47c-3a4c8fa8b10d.vhd \
+        $loc/images/docker.vhd
+    done
+}
+
+azure_blob_copy() {
+    declare source=${1:? required source: account/container/blob}
+    declare dest=${2:? required dest: account/container/blob}
+    
+    read source_account source_container source_blob <<< "$(echo $source | sed 's:/: :'| sed 's:/: :')"
+    read dest_account dest_container dest_blob <<< "$(echo $dest | sed 's:/: :'| sed 's:/: :')"
+    local source_key=$(_azure_get_account_key $source_account)
+    local dest_key=$(_azure_get_account_key $dest_account)
+    azure storage blob copy start \
+        -a $source_account \
+        -k $source_key \
+        --source-container $source_container \
+        --source-blob  $source_blob \
+        --dest-account-name $dest_account \
+        --dest-account-key $dest_key \
+        --dest-container $dest_container \
+        --dest-blob $dest_blob
+
+    echo "===> CHECK PROGRESS: azure storage blob copy show -a $dest_account -k $dest_key --container $dest_container --blob $dest_blob --json | jq .copyProgress -r"
+}
+_azure_get_account_group() {
+    azure storage account list --json |  jq '.[]|select(.name|startswith("'${1:? strogae account}'"))|.resourceGroup' -r
+}
+
+_azure_get_account_key() {
+    declare storage=${1:?required: storage account}
+    declare group=${2}
+
+    if [[ "$group" == "" ]]; then
+        #group=$(_azure_get_account_group ${storage%%.*})
+        group=$(_azure_get_account_group ${storage})
+    fi
+    
+    azure storage account keys list -g $group $storage --json | jq .storageAccountKeys.key1 -r
+}
+
+azure_blob_list() {
+  declare storage=${1:?required: storage account}
+  declare containers=${2}
+
+  local group=$(_azure_get_account_group $storage)
+  debug "group: $group"
+  local key=$(_azure_get_account_key $storage $group)
+  debug "key: $key"
+
+  if [[ "$containers" == "" ]]; then
+      containers=$( azure storage container list -a $storage -k $key --json | jq -r '.[].name')
+  fi
+  debug "containers: $containers"
+
+  for cont in $containers; do
+      debug "container: $cont"
+      azure storage blob list -a $storage -k $key --container $cont --json | jq '.[].name' -r
+  done
+
+}
+
+azure_storage_by_prefix() {
+  local json=$(
+    azure storage account list --json \
+      | jq '[.[]|select(.name|startswith("'${1:?required: storage account prefix}'"))|{name:.name,group:.resourceGroup,endpoint:.primaryEndpoints.blob}]'
+   )
+  if [[ "$2" == "-q" ]]; then
+    jq -r '.[].name' <<< "$json"
+  else
+    in2csv -f json  <<< "$json" | csvlook
+  fi
+}
+azure_delete_group_by_prefix() {
+
+  local groups=$( azure group list --json \
+      | jq '.[]|select(.name|startswith("'"${1:?required: group prefix}"'")).name' -r
+  )
+
+  debug "You are about to delete: $groups"
+  debug "press ENTER to continue or CTRL-C to exit"
+  read idontcare
+
+  xargs -n1 -P20 -I@ bash -xc 'azure group delete @ -q' <<< "$groups"
+}
+
+main() {
+  init
+}
+
+[[ "$0" == "$BASH_SOURCE" ]] && main "$@" || true
