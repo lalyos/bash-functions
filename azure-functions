@@ -29,6 +29,33 @@ azure_copy_everywhere() {
     done
 }
 
+azure_capture() {
+    local group=cbstoreancsa
+    local vmName=cbdeployerVM
+
+    azure vm stop \
+      -vv --json \
+      --resource-group $group \
+      --name $vmName \
+      | tee -a azure-capture.log
+
+    azure vm generalize \
+      -vv --json \
+      --resource-group $group \
+      --name $vmName \
+      | tee -a azure-capture.log
+    
+    azure vm capture \
+      -vv --json \
+      --resource-group $group \
+      --storage-account-container-name images \
+      --template-file-name cbd-template \
+      --name $vmName \
+      --vhd-name-prefix cbd-image \
+      | tee -a azure-capture.log
+
+}
+
 azure_blob_copy() {
     declare source=${1:? required source: account/container/blob}
     declare dest=${2:? required dest: account/container/blob}
