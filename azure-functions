@@ -85,6 +85,20 @@ azure_blob_list() {
   done
 
 }
+azure_delete_blob_by_date() {
+    azure storage blob list \
+        -a $ARM_STORAGE_ACCOUNT \
+        -k $KEY \
+        --container system\
+        --prefix Microsoft.Compute/Images/images/packer --json \
+        | jq '.[]|[.name,.properties["last-modified"]]' -c \
+        | sed -n '/23 Feb/ {s/^..//;s/",.*//;p}' \
+        | xargs -n 1 \
+          azure storage blob delete  \
+            -a $ARM_STORAGE_ACCOUNT \
+            -k $KEY \
+            --container system
+}
 
 azure_storage_by_prefix() {
   local json=$(
