@@ -78,9 +78,12 @@ azure_blob_copy() {
         --dest-account-name $dest_account \
         --dest-account-key $dest_key \
         --dest-container $dest_container \
-        --dest-blob $dest_blob
+        --dest-blob $dest_blob \
+        --json 1>&2
 
-    echo "===> CHECK PROGRESS: azure storage blob copy show -a $dest_account -k $dest_key --container $dest_container --blob $dest_blob --json | jq .copyProgress -r"
+    local checkCmd="azure storage blob copy show -a $dest_account -k $dest_key --container $dest_container --blob $dest_blob --json | jq .copyProgress -r"
+    debug "===> CHECK PROGRESS: $checkCmd"
+    echo "$dest_account: $checkCmd"
 }
 _azure_get_account_group() {
     azure storage account list --json |  jq '.[]|select(.name|startswith("'${1:? strogae account}'"))|.resourceGroup' -r
