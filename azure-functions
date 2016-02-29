@@ -27,7 +27,7 @@ azure_copy_everywhere() {
 
     rm -f checks.yml
     for loc in $locations; do
-      local destBlob="$loc/images/delme-$imageName.vhd"
+      local destBlob="$loc/images/${AZURE_DESTINATION_IMAGE_PREFIX}$imageName.vhd"
       debug "[COPY] $sourceBlob ==> $destBlob"
       azure_blob_copy \
         $sourceBlob \
