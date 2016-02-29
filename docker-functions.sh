@@ -145,6 +145,12 @@ docker-kill-since() {
   fi
 }
 
+docker-env() { 
+  for v in $(eval "echo \${!${1:? env prefix required}*}"); do 
+      echo "  -e $v=\$$v \\"
+  done
+}
+
 docker-kill-all() {
   _docker-kill-containers $(docker ps -qa)
 }
