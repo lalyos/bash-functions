@@ -19,13 +19,23 @@ alias r="source $BASH_SOURCE"
 
 azure_copy_everywhere() {
 
+    local imageName=${1:-"$(azure_latest_image_name_form_atlas)"}
+    debug "imageName=$imageName"
+    local vhdPath=$(azure_latest_vhd_by_prefix $imageName)
+    debug "vhdPath=$vhdPath"
+    local sourceBlob="sequenceiqnortheurope2/system/${vhdPath}"
+    debug "sourceBlob=$sourceBlob"
+
     locations="sequenceiqbrazilsouth2 sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqnortheurope2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2 sequenceiqwestus2"
     #locations="sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2"
+
+    rm -f checks.yml
     for loc in $locations; do
-      debug "COPY to $loc"
+      local destBlob="$loc/images/delme-$imageName.vhd"
+      debug "[COPY] $sourceBlob ==> $destBlob"
       azure_blob_copy \
-        sequenceiqnortheurope2/system/Microsoft.Compute/Images/images/packer-osDisk.f65ccb29-3d55-4ef9-b47c-3a4c8fa8b10d.vhd \
-        $loc/images/docker.vhd
+        $sourceBlob \
+        $destBlob | tee -a checks.yml
     done
 }
 
@@ -112,6 +122,39 @@ azure_blob_list() {
   done
 
 }
+azure_latest_vhd_today() {
+    DATE_STR=$(date | sed "s/... \([^ ]*\) \([0-9]*\) .*/\2 \1/")
+    azure storage blob list \
+        -a $ARM_STORAGE_ACCOUNT \
+        -k $KEY \
+        --container system \
+        --prefix Microsoft.Compute/Images/images/packer \
+        --json \
+        | jq '.[]|[.name,.properties["last-modified"]]' -c \
+        | sed -n '/'"${DATE_STR}"'/ {s/^..//;s/",.*//;p}' \
+        | grep .vhd
+
+}
+
+azure_latest_vhd_by_prefix() {
+    declare imageName=${1:? required: imageName prefix like cloudbreak-2016-02-24}
+
+
+    local key=$(_azure_get_account_key $ARM_STORAGE_ACCOUNT)
+    azure storage blob list \
+        -a $ARM_STORAGE_ACCOUNT \
+        -k $key \
+        --container system \
+        --prefix Microsoft.Compute/Images/packer/${imageName}-osDisk \
+        --json \
+        | jq '.[].name' -r
+}
+
+azure_latest_image_name_form_atlas() {
+  curl -sL https://atlas.hashicorp.com/api/v1/artifacts/sequenceiq/cloudbreak/azure-arm.image/search \
+      |jq '.versions[0].metadata.image_name' -r
+}
+
 azure_delete_blob_by_date() {
     azure storage blob list \
         -a $ARM_STORAGE_ACCOUNT \
