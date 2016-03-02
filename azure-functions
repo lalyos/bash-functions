@@ -35,6 +35,47 @@ azure_copy_everywhere() {
     done
 }
 
+export_all_fns() {
+    eval "$(_export_all_fns)"
+}
+
+_export_all_fns() {
+    sed -n  's/^\([A-Za-z0-9\-_]*\)() {/export -f \1/p' $BASH_SOURCE
+}
+
+azure_delete_everywhere() {
+    declare blobPrefix=${1:? required: blob prefix in form of: container/prefix}
+    declare locations=${LOCATIONS:="sequenceiqbrazilsouth2 sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqnortheurope2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2 sequenceiqwestus2"}
+    
+    #export_all_fns
+    export -f azure_delete_by_prefix _azure_get_account_key
+    for loc in $locations; do
+      local prefix="$loc/$blobPrefix"
+      echo  "$prefix"
+    done \
+        | xargs -P20 -n1 -I@  env DEBUG=$DEBUG  bash -c "azure_delete_by_prefix @"
+
+}
+azure_delete_by_prefix() {
+    declare prefix=${1:? required source: account/container/blob}
+    read account container blobPrefix <<< "$(echo $prefix | sed 's:/: :'| sed 's:/: :')"
+    debug "account=$account container=$container blobPrefix=$blobPrefix"
+
+    local key=$(_azure_get_account_key $account)
+
+    azure storage blob list \
+        -a $account \
+        -k $key \
+        --container $container \
+        --prefix $blobPrefix \
+        --json \
+        | jq .[].name -r \
+        | xargs -n 1 azure storage blob delete \
+            -a $account \
+            -k $key \
+            --container $container \
+            --blob 
+}
 azure_capture() {
     local group=cbstoreancsa
     local vmName=cbdeployerVM
