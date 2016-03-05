@@ -159,10 +159,17 @@ azure_blob_list() {
 
 }
 azure_latest_vhd_today() {
+
+    local group=$(_azure_get_account_group $ARM_STORAGE_ACCOUNT)
+    debug "group: $group"
+    local key=$(_azure_get_account_key $storage $group)
+    debug "key: $key"
+
+
     DATE_STR=$(date | sed "s/... \([^ ]*\) \([0-9]*\) .*/\2 \1/")
     azure storage blob list \
         -a $ARM_STORAGE_ACCOUNT \
-        -k $KEY \
+        -k $key \
         --container system \
         --prefix Microsoft.Compute/Images/images/packer \
         --json \
