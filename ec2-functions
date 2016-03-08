@@ -270,6 +270,42 @@ ec2-delete-ami() {
   aws ec2 delete-snapshot --region $region --snapshot-id $snap --out text
 }
 
+ec2_check_all_users() {
+  : ${AWS_IAM_USERS:=$(aws iam list-users --query Users[].UserName --out text)}
+
+  for u in $AWS_IAM_USERS; do
+    if aws iam get-login-profile --user-name $u &>/dev/null; then
+      echo === set password-reset-required for $u
+      aws iam update-login-profile --user-name $u --password-reset-required
+      #aws iam get-login-profile --user-name $u --query LoginProfile.[CreateDate,UserName,PasswordResetRequired] --out text
+    fi
+  done
+}
+
+ec2_check_password_reset_required() {
+  : ${AWS_IAM_USERS:=$(aws iam list-users --query Users[].UserName --out text)}
+
+  echo "===> password reset required for:"
+  for u in $AWS_IAM_USERS; do
+    if aws iam get-login-profile --user-name $u &>/dev/null; then
+      #aws iam update-login-profile --user-name $u --password-reset-required
+      if [[ $(aws iam get-login-profile --user-name $u --query LoginProfile.PasswordResetRequired --out text) == "True" ]]; then
+        echo " - $u"
+      fi
+    fi
+  done
+}
+
+ec2_password_last_used() {
+    echo "===> last login date"
+    aws iam list-users --query Users[].[PasswordLastUsed,UserName] --out text|grep -v None|sort -r
+}
+
+ec2_check_passwords() {
+  ec2_password_last_used
+  ec2_check_password_reset_required
+}
+
 ec2-delete-images-by-name-prefix() {
   declare prefix=${1:? required}
   
