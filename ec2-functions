@@ -355,4 +355,4 @@ ec2-terminate-by-name-all-regs() {
     fi
   done
 }
-alias ec2-reload-functions='. ~/apps/bin/ec2-functions'
+alias ec2-reload-functions="source $BASH_SOURCE"
