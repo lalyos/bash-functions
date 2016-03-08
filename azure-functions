@@ -22,8 +22,8 @@ azure_copy_everywhere() {
     local sourceBlob="sequenceiqnortheurope2/system/${vhdPath}"
     debug "sourceBlob=$sourceBlob"
 
-    locations="sequenceiqbrazilsouth2 sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqnortheurope2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2 sequenceiqwestus2"
-    #locations="sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2"
+    local locations=${LOCATIONS:="sequenceiqbrazilsouth2 sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqnortheurope2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2 sequenceiqwestus2"}
+    #local locations="sequenceiqcentralus2 sequenceiqeastasia2 sequenceiqeastus12 sequenceiqeastus22 sequenceiqjapaneast2 sequenceiqjapanwest2 sequenceiqorthcentralus2 sequenceiqouthcentralus2 sequenceiqsoutheastasia2 sequenceiqwesteurope2"
 
     rm -f checks.yml
     for loc in $locations; do
