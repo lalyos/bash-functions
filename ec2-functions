@@ -308,14 +308,15 @@ ec2_check_passwords() {
 }
 
 ec2-delete-images-by-name-prefix() {
-  declare prefix=${1:? required}
+  declare prefix=${1:? required: prefix}
   
   echo > /tmp/delete.sh
   for reg in $(ec2-regions); do
       local imagesToDelete=$(
         aws ec2 describe-images \
           --owners=self \
-          --query 'Images[?starts_with(Name,`cb-centos71-amb212-2015-11-09`)].[ImageId]' \
+          --query 'Images[?starts_with(Name,`'$prefix'`)].[ImageId]' \
+          --region $reg \
           --out text | xargs echo
       )
       #echo "[WARNING] about to DELETE:"
