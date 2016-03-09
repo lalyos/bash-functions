@@ -324,6 +324,7 @@ ec2-delete-images-by-name-prefix() {
       aws ec2 describe-images \
           --image-ids $imagesToDelete \
           --query 'Images[].[ImageId,Name]' \
+          --region $reg \
           --out text
       #echo "press ENTER to continue or CTRL-C to exit"
       #read x
