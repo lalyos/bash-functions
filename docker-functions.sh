@@ -26,6 +26,10 @@ docker-functions() {
   echo source=$PRG
 }
 
+dunset() {
+    unset ${!DOCK*}
+}
+
 dim() {
     docker images|grep MB|sort -n --key=7; docker images|grep GB|sort -n --key=7
 }
