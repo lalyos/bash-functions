@@ -356,4 +356,17 @@ ec2-terminate-by-name-all-regs() {
     fi
   done
 }
+
+ec2-del-logs-by-group-name(){
+  declare logGroupPattern=${1:? logGroupPattern required}
+
+  logs=$(aws logs describe-log-groups --query 'logGroups[? contains(logGroupName,`'${logGroupPattern}'`)].logGroupName' --out text)
+  
+  echo "about to delete LOGS: $logs"
+  echo "press ENTER to continue or CTRL-C to exit"
+  read x
+
+  echo $logs | xargs -r -n1 -P 30 aws logs delete-log-group --log-group-name
+}
+
 alias ec2-reload-functions="source $BASH_SOURCE"
