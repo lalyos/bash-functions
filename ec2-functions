@@ -84,6 +84,9 @@ ec2-list-debian-jessie() {
   ec2-find-img-regions 379101102735 379101102735/debian-jessie-amd64
 }
 
+ec2-list-amazon-linux() {
+  ec2-find-img-regions 137112412989 amzn-ami-eu-west-1/amzn-ami-h
+}
 ec2-list-fedora() {
   ec2-find-img-regions 206029621532 amazon/fedora
 }
