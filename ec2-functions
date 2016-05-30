@@ -234,11 +234,11 @@ ec2-delete-keys-by-prefix() {
   declare keynamePrefix=$1
 
   : ${keynamePrefix:? required}
-  for reg in $(aws ec2 describe-regions --query "Regions[].RegionName" --out text); do 
+  for reg in $(aws ec2 describe-regions --query "Regions[].RegionName" --out text); do
     echo === clean $reg
     aws ec2 describe-key-pairs --region=$reg \
       | jq '.KeyPairs[]|.KeyName|select(startswith("'$keynamePrefix'"))' -r \
-      | xargs -P 20 -t -n 1 --no-run-if-empty -I KEYS bash -c "aws ec2 delete-key-pair --key-name KEYS --region=$reg"
+      | xargs -P 20 -t -n 1 --no-run-if-empty -I @ bash -c "aws ec2 delete-key-pair --key-name '@' --region=$reg"
   done
 }
 
