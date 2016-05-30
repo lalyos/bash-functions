@@ -242,6 +242,18 @@ ec2-delete-keys-by-prefix() {
   done
 }
 
+ec2-delete-sec-grp-by-prefix() {
+  declare secGroupPrefix=${1}
+
+  : ${secGroupPrefix:?required}
+
+  for reg in $(ec2-regions); do
+    debug "clean secGrps in: $reg"
+    aws ec2 describe-security-groups --region=$reg --query 'SecurityGroups[?starts_with(GroupName,`'${secGroupPrefix}'`)].GroupId' --out text \
+      | xargs -n1 -P20 --no-run-if-empty aws ec2 delete-security-group --region=$reg --group-id
+  done
+}
+
 
 ec2-clean-images() {
   local amiWhiteList="ci-2014-06-25\|ci-sequenceiq\|ambari-docker-140716083934"
