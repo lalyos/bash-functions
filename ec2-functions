@@ -85,7 +85,10 @@ ec2-list-debian-jessie() {
 }
 
 ec2-list-amazon-linux() {
-  ec2-find-img-regions 137112412989 amzn-ami-eu-west-1/amzn-ami-h
+  # ec2-find-img-regions 137112412989 amzn-ami-eu-west-1/amzn-ami-h
+  aws ec2 describe-images \
+    --filter Name=owner-alias,Values=amazon \
+    --query 'reverse(sort_by(Images[?contains(ImageLocation,`amazon/amzn-ami-hvm`) && ends_with(ImageLocation, `gp2`)].{loc:ImageLocation,id:ImageId}, &loc))[0].id' --out text
 }
 ec2-list-fedora() {
   ec2-find-img-regions 206029621532 amazon/fedora
