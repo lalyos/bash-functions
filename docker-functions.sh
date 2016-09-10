@@ -38,6 +38,14 @@ dim-sort() {
   docker images | sed -n "s/\(.*\) \([0-9]*\)\.[0-9]* MB$/\2+++\1/p"|sed "s/ \+/ /g"|cut -d' ' -f 1,2|tr ' ' ':'|sed 's/+++/ /'|sort -n
 }
 
+docker-select-version() {
+  select ver in /usr/local/Cellar/docker/* ; do
+    local binary=$ver/bin/docker
+    debug docker aliased to: $binary
+    alias docker=$binary
+    break
+  done
+}
 
 docker-reload() {
   source ${BASH_SOURCE[0]}
