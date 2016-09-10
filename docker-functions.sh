@@ -145,7 +145,7 @@ docker-kill-since() {
   if [ $# -lt 1 ] ; then
     echo please specify SINCE containers
   else
-    _docker-kill-containers $(docker ps -qf since=$1)
+    _docker-kill-containers $(docker ps -qaf since=$1)
   fi
 }
 
